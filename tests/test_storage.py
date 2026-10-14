@@ -108,5 +108,50 @@ class TestStorage(unittest.TestCase):
         )
 
 
+import json, os, tempfile
+from campusflow.storage import load_tickets
+
+
+def _valid(tid="T001", title="wifi down"):
+    return {
+        "id": tid, "title": title, "category": "Network",
+        "urgency": "low", "affected_users": 1, "priority": "low",
+        "status": "open", "assigned_to": None, "notes": [],
+    }
+
+
+class TestStorageCollectionValidation(unittest.TestCase):
+
+    def setUp(self):
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+        tmp.close()
+        self.path = tmp.name
+
+    def tearDown(self):
+        os.unlink(self.path)
+
+    def _write(self, obj):
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(obj, f)
+
+    def test_duplicate_ticket_id_rejected(self):
+        self._write([_valid("T001"), _valid("T001", "second")])
+        with self.assertRaises(ValueError):
+            load_tickets(self.path)
+
+    def test_malformed_record_rejected(self):
+        self._write([{"id": "T001"}])
+        with self.assertRaises(ValueError):
+            load_tickets(self.path)
+
+    def test_failed_load_does_not_touch_caller_data(self):
+        in_memory = [_valid("T001", "keep me")]
+        self._write([{"id": "T002"}])
+        try:
+            in_memory = load_tickets(self.path)
+        except ValueError:
+            pass
+        self.assertEqual(in_memory[0]["title"], "keep me")
+
 if __name__ == "__main__":
     unittest.main()

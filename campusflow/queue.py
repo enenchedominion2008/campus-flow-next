@@ -10,7 +10,8 @@ def get_work_queue(tickets):
     unresolved_tickets = []
 
     for ticket in tickets:
-        if ticket["status"] != "resolved":
+        if ticket["status"] == "open":
+
             unresolved_tickets.append(ticket)
 
     sorted_tickets = sorted(
