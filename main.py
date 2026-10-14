@@ -1,4 +1,3 @@
-
 from campusflow.tickets import create_ticket
 from campusflow.storage import (
     save_tickets,
@@ -8,6 +7,7 @@ from campusflow.storage import (
 )
 from campusflow.queue import get_work_queue
 from campusflow.reports import generate_report
+from campusflow.search import search_tickets
 
 
 def main():
@@ -29,11 +29,13 @@ def main():
         print("5. Reopen Resolved Ticket")
         print("6. View Work Queue")
         print("7. View Reports")
-        print("8. Exit")
+        print("8. Search Tickets")
+        print("9. Exit")
         print("=========================================")
 
         choice = input("Enter your choice: ").strip()
 
+        # OPTION 1: CREATE TICKET
         if choice == "1":
             print("\nCreate Ticket")
 
@@ -69,6 +71,7 @@ def main():
             except OSError as error:
                 print("Error saving ticket:", error)
 
+        # OPTION 2: VIEW TICKETS
         elif choice == "2":
             print("\nAll Tickets")
 
@@ -87,7 +90,7 @@ def main():
                     print("Status:", ticket["status"])
                     print("Assigned to:", ticket.get("assigned_to"))
 
-        # OPTION 3: ASSIGN TICKET - ENGINEER B
+        # OPTION 3: ASSIGN TICKET
         elif choice == "3":
             print("\nAssign Ticket")
 
@@ -106,7 +109,7 @@ def main():
             except OSError as error:
                 print("Error saving ticket:", error)
 
-        # OPTION 4: CHANGE STATUS - ENGINEER B
+        # OPTION 4: CHANGE TICKET STATUS
         elif choice == "4":
             print("\nChange Ticket Status")
             print("Available transitions:")
@@ -130,7 +133,7 @@ def main():
             except OSError as error:
                 print("Error saving ticket:", error)
 
-        # OPTION 5: REOPEN RESOLVED TICKET - ENGINEER B
+        # OPTION 5: REOPEN RESOLVED TICKET
         elif choice == "5":
             print("\nReopen Resolved Ticket")
 
@@ -151,7 +154,7 @@ def main():
             except OSError as error:
                 print("Error saving ticket:", error)
 
-        # OPTION 6: VIEW WORK QUEUE - ENGINEER B
+        # OPTION 6: VIEW WORK QUEUE
         elif choice == "6":
             print("\nWork Queue")
 
@@ -173,7 +176,7 @@ def main():
             except (KeyError, ValueError) as error:
                 print("Error displaying work queue:", error)
 
-        # OPTION 7: VIEW REPORTS - ENGINEER B
+        # OPTION 7: VIEW REPORTS
         elif choice == "7":
             print("\n========== TICKET REPORT ==========")
 
@@ -195,15 +198,86 @@ def main():
             except (KeyError, TypeError) as error:
                 print("Error generating report:", error)
 
-        # OPTION 8: EXIT
+        # OPTION 8: SEARCH TICKETS
         elif choice == "8":
+            print("\nSearch Tickets")
+
+            search_term = input(
+                "Enter title keyword (press Enter to skip): "
+            ).strip()
+
+            category = get_valid_filter(
+                "Enter category (Network/Hardware/Software/Other), "
+                "or press Enter to skip: ",
+                ["Network", "Hardware", "Software", "Other"]
+            )
+
+            status = get_valid_filter(
+                "Enter status (open/in_progress/resolved), "
+                "or press Enter to skip: ",
+                ["open", "in_progress", "resolved"]
+            )
+
+            priority = get_valid_filter(
+                "Enter priority (critical/high/medium/low), "
+                "or press Enter to skip: ",
+                ["critical", "high", "medium", "low"]
+            )
+
+            try:
+                results = search_tickets(
+                    tickets,
+                    search_term=search_term,
+                    category=category,
+                    status=status,
+                    priority=priority
+                )
+
+                if not results:
+                    print("No matching tickets found.")
+
+                else:
+                    print(
+                        f"\nFound {len(results)} matching ticket(s):"
+                    )
+
+                    for ticket in results:
+                        print("\n-------------------------")
+                        print("ID:", ticket["id"])
+                        print("Title:", ticket["title"])
+                        print("Category:", ticket["category"])
+                        print("Priority:", ticket["priority"])
+                        print("Status:", ticket["status"])
+                        print("Assigned to:", ticket.get("assigned_to"))
+
+            except (KeyError, AttributeError) as error:
+                print("Error searching tickets:", error)
+        # OPTION 9: EXIT
+        elif choice == "9":
             print("Thank you for using CampusFlow!")
             break
 
+        # INVALID MENU CHOICE
         else:
-            print("Invalid choice. Please enter a number from 1 to 8.")
+            print("Invalid choice. Please enter a number from 1 to 9.")
 
+def get_valid_filter(prompt, valid_options):
+    while True:
+        value = input(prompt).strip()
+
+        # An empty value means the user wants to skip this filter
+        if value == "":
+            return None
+
+        # Accept valid options without worrying about letter case
+        for option in valid_options:
+            if value.casefold() == option.casefold():
+                return option
+
+        print(
+            "Invalid option. Please choose from: "
+            + ", ".join(valid_options)
+        )
 
 if __name__ == "__main__":
     main()
-
