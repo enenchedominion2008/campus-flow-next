@@ -193,8 +193,18 @@ def main():
                 for priority, count in report["by_priority"].items():
                     print(f"{priority}: {count}")
 
-                print("===================================")
+                print("\nTickets by category:")
+                for category, count in report["by_category"].items():
+                    print(f"{category}: {count}")
 
+                print("\nUnresolved tickets:", report["unresolved"])
+                print("Resolved tickets:", report["resolved"])
+                print(
+                    "Resolution percentage:",
+                    f'{report["resolution_percentage"]:.1f}%'
+                )
+                
+                print("===================================")
             except (KeyError, TypeError) as error:
                 print("Error generating report:", error)
 
