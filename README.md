@@ -235,3 +235,22 @@ https://github.com/Cherry-tech14/campusflow/pulls
 
 
 
+### campus flow next
+## Data Format
+
+Tickets are stored in `data/tickets.json` as a JSON list. Each ticket has the shape:
+
+```json
+{
+  "id": "T001",
+  "title": "Wi-Fi down in Block A",
+  "category": "Network",
+  "urgency": "high",
+  "affected_users": 12,
+  "priority": "critical",
+  "status": "open",
+  "assigned_to": null,
+  "notes": [
+    {"note_id": "N001", "author": "Mentor A", "message": "Router rebooted"}
+  ]
+}

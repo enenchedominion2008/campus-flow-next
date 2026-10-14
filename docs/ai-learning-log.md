@@ -1,75 +1,63 @@
 # CampusFlow AI Learning Log
 
-## Engineer A
-**Responsibilities:** Ticket creation, input validation, priority engine, persistence storage 
-and automated tests.
+## Engineer A — Mariam Mohammed (Cherry-tech14)
+**Responsibilities (CampusFlow Next):** Validation helpers, safe status/assignment mutations, note data layer, safe JSON load/save, ID continuity, tests.
+
+---
+
+## Part 1 — Original CampusFlow
 
 ### Log 1: Ticket Creation
-**Problem:** Generate unique ticket IDs (T001, T002, etc.).
+**Problem:** Generate unique ticket IDs.
+**AI Assistance:** Explained loops, slicing, f-strings for sequential IDs.
+**Learned:** How `f"T{highest_id + 1:03d}"` works.
+**Verification:** unittest for creation + unique IDs — passed.
 
-**AI Assistance:** AI explained how to use loops, string slicing, and f-strings to generate sequential IDs.
-
-**What I Learned:** How `f"T{highest_id + 1:03d}"` generates ticket IDs.
-
-**Verification:** Tested ticket creation and unique IDs using unittest. Tests passed.
-
-### Log 2: Input Validation and Priority Engine
-**Problem:** Validate ticket information and calculate priority correctly.
-
-**AI Assistance:** AI explained conditional statements, ValueError, and priority rules.
-
-**What I Learned:** How to reject invalid inputs and calculate critical, high, medium, and low priorities.
-
-**Verification:** Tested valid and invalid inputs and all four priority levels. Tests passed.
+### Log 2: Input Validation & Priority Engine
+**Problem:** Validate ticket fields and compute priority correctly.
+**AI Assistance:** Explained conditionals, ValueError, priority rules.
+**Learned:** Rejecting invalid input; four priority levels.
+**Verification:** Tests for valid/invalid inputs and all priorities — passed.
 
 ### Log 3: Automated Testing
-**Problem:** Verify that ticket creation, validation, and priority calculation work correctly.
+**Problem:** Verify creation, validation, priority.
+**AI Assistance:** Explained unittest, assertEqual, assertRaises, setUp.
+**Learned:** Writing tests with expected results.
+**Verification:** Full test suite passed.
 
-**AI Assistance:** AI explained unittest, assertEqual(), assertRaises(), and setUp().
+---
 
-**What I Learned:** How to write automated tests and check expected results.
+## Part 2 — CampusFlow Next
 
-**Verification:** Ran `python3 -m unittest discover -s tests -v`. All 16 Engineer A ticket tests passed.
+### Log 4: Validate-before-mutate for collections
+**Concept gap:** Old `load_tickets` accepted records missing keys, invalid values, and duplicate IDs. Didn't know how to reject a whole collection without damaging caller state.
 
-### Summary
-AI helped me understand Python concepts, improve my implementation, and write automated tests. I verified my work through testing.
+**Question asked:** "Explain how to validate a dictionary BEFORE mutating it (book-library example). Then show how to validate a list of dicts and reject the load if any entry is invalid, without losing the caller's in-memory list."
 
-# CampusFlow AI Learning Log
+**AI guidance:** Separate shape validation from business-rule validation. Return `(True, None)` / `(False, reason)`. Build candidate list, validate fully, only then swap the caller's reference.
 
-## Engineer B
+**Mini experiment:** `isinstance(True, int)` → `True` (bool subclasses int). `type(True) is int` → `False`. Decision: reject bools explicitly with `isinstance(n, bool) or not isinstance(n, int)`.
 
-**Responsibilities:** Ticket assignment, status management, work queue, reports, and automated testing.
+**Verification:** Wrote `test_validation.py` covering `True`, `2.5`, `0`, `-1`, `"5"` as `affected_users` (all rejected). Wrote `test_failed_load_does_not_touch_caller_data` proving corrupt file leaves caller list unchanged.
 
-### Log 1: Ticket Assignment and Status Management
+**Decision:** Adopted result-tuple validators + pure-return `load_tickets`. Adjusted AI's bool check to be explicit rather than relying on `type(x) != int`.
 
-**Problem:** Assign tickets correctly and ensure they follow valid status transitions.
+---
 
-**AI Assistance:** AI explained ticket lookup, input validation, conditional statements, and `ValueError`.
+### Log 5: Note ID generation without consuming IDs on rejection
+**Concept gap:** Requirement B says a rejected note must not consume an ID. Worried about ID reuse if notes were deleted.
 
-**What I Learned:** How to assign staff members and manage ticket statuses safely.
+**Question asked:** "Compare (a) store a counter on the ticket vs (b) compute from max existing note_id. Which is safer for JSON-only projects where users may hand-edit files? I'll test both — don't implement my project."
 
-**Verification:** Created tests for valid assignments, invalid inputs, and status transitions.
+**AI guidance:** Stored counters can desync from hand-edited files. Max-suffix is self-healing. Validate the candidate dict before appending — if invalid, discard and reuse the same ID next call.
 
-### Log 2: Work Queue and Reports
+**Mini experiment:** `"WI-FI".lower()` vs `"WI-FI".casefold()` — same for ASCII; casefold differs on ß (irrelevant here). Decision: use casefold in Engineer B's search, not in note IDs.
 
-**Problem:** Organize unresolved tickets by priority and generate ticket statistics.
+**Verification:** Wrote `test_blank_author_rejected_without_consuming_id` (next successful note is still `N001`) and `test_note_after_reopen_accepted` (next ID after reopen is `N002` when `N001` exists).
 
-**AI Assistance:** AI explained sorting, lambda functions, dictionaries, and loops.
+**Decision:** Adopted design (b) — compute from max suffix, validate candidate before appending. **Changed AI's first suggestion (counter) after testing showed it can desync from hand-edited JSON. Team's documented case of a rejected AI suggestion backed by evidence.**
 
-**What I Learned:** How to sort tickets and count tickets by status and priority.
+---
 
-**Verification:** Created tests for queue ordering, resolved tickets, and report accuracy.
-
-### Log 3: Automated Testing
-
-**Problem:** Verify that Engineer B's functions work correctly.
-
-**AI Assistance:** AI explained Python's `unittest`, `setUp()`, `assertEqual()`, and `assertRaises()`.
-
-**What I Learned:** How to test expected results and handle invalid situations.
-
-**Verification:** Prepared 23 automated tests to check Engineer B's functions.
-
-### Summary
-
-AI helped me understand ticket management, queue sorting, report generation, and automated testing. I prepared tests to verify my work and improve CampusFlow's reliability.
+## Summary
+AI was most useful as a *design comparator* — asked for trade-offs, verified each claim with tests or Python docs. One AI suggestion (stored note counter) was changed after evidence showed max-suffix is safer for a JSON-only project.
