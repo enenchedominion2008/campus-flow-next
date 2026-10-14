@@ -62,7 +62,7 @@ class TestWorkQueue(unittest.TestCase):
             ["T001", "T002", "T010"],
         )
 
-    def test_resolved_tickets_are_excluded(self):
+    def test_only_open_tickets_in_queue(self):
         tickets = [
             make_ticket("T001", "critical", "resolved"),
             make_ticket("T002", "high", "open"),
@@ -73,9 +73,8 @@ class TestWorkQueue(unittest.TestCase):
 
         self.assertEqual(
             [ticket["id"] for ticket in result],
-            ["T002", "T003"],
+            ["T002"],
         )
-
     def test_empty_ticket_list_returns_empty_list(self):
         self.assertEqual(get_work_queue([]), [])
 
