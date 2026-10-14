@@ -1,11 +1,7 @@
 
 from campusflow.tickets import create_ticket
-from campusflow.storage import (
-    save_tickets,
-    load_tickets,
-    assign_ticket,
-    update_status,
-)
+from campusflow.storage import save_tickets, load_tickets
+from campusflow.workflow import assign_ticket, update_status
 from campusflow.queue import get_work_queue
 from campusflow.reports import generate_report
 

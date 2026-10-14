@@ -1,7 +1,6 @@
 import unittest
 
-from campusflow.storage import assign_ticket, update_status
-
+from campusflow.workflow import assign_ticket, update_status
 
 def make_ticket(
     ticket_id="T001",
