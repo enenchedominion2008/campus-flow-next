@@ -1,0 +1,22 @@
+[
+    {
+        "id": "T001",
+        "title": "sdhlhfalosi",
+        "category": "Network",
+        "urgency": "high",
+        "affected_users": 10,
+        "priority": "critical",
+        "status": "open",
+        "assigned_to": null
+    },
+    {
+        "id": "T002",
+        "title": "laptop",
+        "category": "Software",
+        "urgency": "high",
+        "affected_users": 4,
+        "priority": "high",
+        "status": "open",
+        "assigned_to": "dominion"
+    }
+]
