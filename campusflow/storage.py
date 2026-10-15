@@ -28,6 +28,11 @@ def load_tickets(path=FILE_PATH):
     if not isinstance(tickets, list):
         raise ValueError("Ticket data must be a list")
 
+    
+    for t in tickets:
+        if isinstance(t, dict) and "notes" not in t:
+            t["notes"] = []
+
     ok, reason = validate_ticket_collection(tickets)
     if not ok:
         raise ValueError(f"Invalid ticket data: {reason}")
