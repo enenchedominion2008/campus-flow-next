@@ -4,6 +4,7 @@ from campusflow.workflow import assign_ticket, update_status
 from campusflow.queue import get_work_queue
 from campusflow.reports import generate_report
 from campusflow.search import search_tickets
+from campusflow.understanding_check import run_quiz
 
 
 def main():
@@ -26,7 +27,8 @@ def main():
         print("6. View Work Queue")
         print("7. View Reports")
         print("8. Search Tickets")
-        print("9. Exit")
+        print("9. Engineering understanding check")
+        print("10. Exit")
         print("=========================================")
 
         choice = input("Enter your choice: ").strip()
@@ -259,13 +261,18 @@ def main():
             except (KeyError, AttributeError) as error:
                 print("Error searching tickets:", error)
         # OPTION 9: EXIT
+                # OPTION 9: ENGINEERING UNDERSTANDING CHECK
         elif choice == "9":
+            run_quiz()
+
+        # OPTION 10: EXIT
+        elif choice == "10":
             print("Thank you for using CampusFlow!")
             break
 
         # INVALID MENU CHOICE
         else:
-            print("Invalid choice. Please enter a number from 1 to 9.")
+            print("Invalid choice. Please enter a number from 1 to 10.")
 
 def get_valid_filter(prompt, valid_options):
     while True:
