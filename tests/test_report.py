@@ -114,6 +114,64 @@ class TestGenerateReport(unittest.TestCase):
             report["total"],
         )
 
+    def test_counts_tickets_by_category(self):
+        tickets = [
+            {
+                **make_ticket("T001", "critical", "open"),
+                "category": "Network",
+            },
+            {
+                **make_ticket("T002", "high", "in_progress"),
+                "category": "Hardware",
+            },
+            {
+                **make_ticket("T003", "low", "resolved"),
+                "category": "Network",
+            },
+        ]
+
+        report = generate_report(tickets)
+
+        self.assertEqual(
+            report["by_category"],
+            {
+                "Network": 2,
+                "Hardware": 1,
+                "Software": 0,
+                "Other": 0,
+            },
+        )
+
+    def test_counts_unresolved_and_resolved_tickets(self):
+        tickets = [
+            make_ticket("T001", "high", "open"),
+            make_ticket("T002", "medium", "in_progress"),
+            make_ticket("T003", "low", "resolved"),
+        ]
+
+        report = generate_report(tickets)
+
+        self.assertEqual(report["unresolved"], 2)
+        self.assertEqual(report["resolved"], 1)
+
+    def test_calculates_resolution_percentage(self):
+        tickets = [
+            make_ticket("T001", "high", "open"),
+            make_ticket("T002", "medium", "resolved"),
+            make_ticket("T003", "low", "resolved"),
+            make_ticket("T004", "critical", "resolved"),
+        ]
+
+        report = generate_report(tickets)
+
+        self.assertEqual(report["resolution_percentage"], 75.0)
+
+    def test_empty_dataset_has_zero_resolution_percentage(self):
+        report = generate_report([])
+
+        self.assertEqual(report["resolution_percentage"], 0)
+        self.assertEqual(report["unresolved"], 0)
+        self.assertEqual(report["resolved"], 0)
 
 if __name__ == "__main__":
     unittest.main()
