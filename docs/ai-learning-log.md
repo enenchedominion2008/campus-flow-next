@@ -61,3 +61,32 @@
 
 ## Summary
 AI was most useful as a *design comparator* — asked for trade-offs, verified each claim with tests or Python docs. One AI suggestion (stored note counter) was changed after evidence showed max-suffix is safer for a JSON-only project.
+
+
+## Part 3 — Engineer B: Search, reporting, and CLI integration
+
+### Log 6: Keeping search read-only while offering priority sorting
+**Concept gap addressed:** A priority-sorted search view should not silently reorder the list used by the rest of the application. The existing queue is a separate feature and must retain its own open-ticket-only rules.
+
+**Question/prompt used for this cycle:** “Implement Engineer B's optional priority-sorted search results without changing the original ticket list or the existing work queue, and add a test proving the list stays unchanged.”
+
+**AI guidance summary:** Sort a copy of the search results for display; use an explicit priority rank (`critical`, `high`, `medium`, `low`) and numeric ticket ID as a tie-breaker. Keep the search function read-only and keep the queue API separate.
+
+**Tiny unrelated experiment:** Tested Python's `sorted()` against a source list and tested `casefold()` with `STRASSE`/`straße`. The sorted result was `['critical', 'medium', 'low']` while the source remained `['low', 'critical', 'medium']`; the two strings compared equal after `casefold()`.
+
+**Independent verification:** `tests/test_cli.py::test_search_priority_view_sorts_copy_not_original` checks that priority view orders a low-priority ticket behind a critical ticket while preserving the source collection. Existing `tests/test_search.py` checks case-insensitive title matching and AND-combined filters.
+
+**Decision:** Use a separate sorted result list for the optional presentation view. Do not reuse or mutate the original work queue.
+
+### Log 7: Keep user interaction out of business logic
+**Concept gap addressed:** Input prompts, retry loops, report formatting, and note display can make tests dependent on a live terminal if they are tightly coupled to the business functions.
+
+**Question/prompt used for this cycle:** “Integrate the Engineer B features in `main.py` while leaving search/report/note validation logic in their modules, and make CLI behavior testable with standard-library tools.”
+
+**AI guidance summary:** Let the CLI collect input and render output, call `search_tickets`, `generate_report`, `add_note`, and the existing workflow/storage functions for behavior, and inject input/output callables so tests can simulate a user without opening a real terminal. Retry invalid filter choices and persist only after a successful note mutation.
+
+**Tiny unrelated experiment:** Confirmed that `input`/`print` can be passed as function arguments and replaced with test callables. This lets a test capture prompts/results as a list of strings.
+
+**Independent verification:** Added `tests/test_cli.py` for invalid menu choices, filter retry, priority-sort immutability, note persistence, and numeric note ordering. The full suite is run with `python3 -m unittest discover -s tests -v`.
+
+**Decision:** Keep menu flow in `main.py`, with separate helper functions for search/report/note display. The quiz remains in `campusflow/understanding_check.py` so its question bank and scoring are independent of the main menu.

@@ -5,6 +5,7 @@ from campusflow.queue import get_work_queue
 from campusflow.reports import generate_report
 from campusflow.search import search_tickets
 from campusflow.understanding_check import run_quiz
+from campusflow.notes import add_note
 
 
 def main():
@@ -28,7 +29,9 @@ def main():
         print("7. View Reports")
         print("8. Search Tickets")
         print("9. Engineering understanding check")
-        print("10. Exit")
+        print("10. Add Follow-up Note")
+        print("11. View Ticket Notes")
+        print("12. Exit")
         print("=========================================")
 
         choice = input("Enter your choice: ").strip()
@@ -260,13 +263,58 @@ def main():
 
             except (KeyError, AttributeError) as error:
                 print("Error searching tickets:", error)
+
         # OPTION 9: EXIT
                 # OPTION 9: ENGINEERING UNDERSTANDING CHECK
         elif choice == "9":
             run_quiz()
 
-        # OPTION 10: EXIT
         elif choice == "10":
+           print("\nAdd Follow-up Note")
+
+            ticket_id = input("Enter ticket ID: ").strip()
+            author = input("Enter author name: ").strip()
+            message = input("Enter note message (5-300 chars): ").strip()
+
+            try:
+                note = add_note(ticket_id, author, message, tickets)
+                save_tickets(tickets)
+                print("Note added successfully!")
+                print("Note ID:", note["note_id"])
+                print("Author:", note["author"])
+                print("Message:", note["message"])
+
+            except ValueError as error:
+                print("Error:", error)
+
+            except OSError as error:
+                print("Error saving note:", error)
+
+        elif choice == "11":
+            print("\nTicket Notes")
+
+            ticket_id = input("Enter ticket ID: ").strip()
+
+            target = None
+            for t in tickets:
+                if t["id"] == ticket_id:
+                    target = t
+                    break
+
+            if target is None:
+                print(f"Ticket {ticket_id} not found.")
+            elif not target["notes"]:
+                print(f"Ticket {ticket_id} has no notes yet.")
+            else:
+                print(f"\nNotes for {ticket_id} — {target['title']}")
+                for note in target["notes"]:
+                    print("\n-------------------------")
+                    print("Note ID:", note["note_id"])
+                    print("Author:", note["author"])
+                    print("Message:", note["message"])
+
+        # OPTION 10: EXIT
+        elif choice == "12":
             print("Thank you for using CampusFlow!")
             break
 
