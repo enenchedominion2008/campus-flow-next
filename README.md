@@ -2,117 +2,110 @@
 
 ## Project Overview
 
-CampusFlow is a Python-based command-line application designed to help campus IT support teams manage technical support requests.
+CampusFlow is a Python command-line application for campus IT support teams
+to manage technical support requests. It supports ticket creation, automatic
+priority calculation, assignment, status transitions, follow-up notes,
+multi-filter search, reports, and JSON persistence.
 
-The system allows users to create support tickets, assign priorities, track ticket progress, and organize unresolved issues.
+This is **CampusFlow Next** — a reliability upgrade of the original project,
+adding stronger validation, structured follow-up notes, safe JSON loading,
+search/filtering, expanded reports, and an interactive Engineering
+Understanding Check.
 
-### Problem Statement
+## Technologies Used
 
-Campus IT departments receive technical complaints involving network connections, computer hardware, software, and other IT services.
-
-Without a structured system, these complaints can be difficult to track, prioritize, and resolve.
-
-CampusFlow provides a simple ticket management solution that helps IT support teams:
-
-- Record technical issues.
-- Automatically calculate ticket priorities.
-- Assign tickets to support staff.
-- Track ticket resolution progress.
-- Organize outstanding support requests.
-- Generate ticket reports.
-- Save and retrieve ticket information.
-
-The project was developed collaboratively using Python, Git, GitHub, and automated testing.
+- Python (standard library only)
+- JSON
+- unittest
+- Git / GitHub
+- VS Code
 
 ---
 
-##  Team Members and Contributions
+## Team Members and Contributions (CampusFlow Next)
 
-CampusFlow was developed by two engineers.
-
-### Engineer A — Mariam Mohammed (Cherry-tech14)
+### Engineer A — Mariam Mohammed [Cherry-tech14]
+**Role:** Ticket Safety and Storage Engineer
 
 **Responsibilities:**
-- Ticket creation.
-- Input validation.
-- Priority calculation engine.
-- Automated testing for ticket creation and validation.
+- Centralized validation helpers
+- Safe assignment and status mutations
+- Follow-up note data operations
+- Safe JSON load/save and ID continuity
+- Tests for validation, notes, storage
 
 **Contributions:**
-- Implemented ticket creation with unique ticket IDs.
-- Validated ticket titles, categories, urgency levels, and affected users.
-- Implemented automatic priority calculation.
-- Developed automated tests using Python's `unittest` framework.
-- Contributed to project integration and documentation.
+- Added `campusflow/validation.py` (validate_ticket, validate_ticket_collection, validate_note_shape)
+- Added `campusflow/notes.py` (add_note, next_note_id)
+- Extended `create_ticket` with `notes` field
+- Strengthened `load_tickets` to validate the full collection and reject malformed records and duplicate IDs without losing caller state
+- Migrated legacy tickets missing `notes` on load
+- Fixed `get_work_queue` to include OPEN tickets only
+- Made `workflow.py` the single source of state transitions
+- Added tests: test_validation.py, test_notes.py, storage collection tests
 
 ### Engineer B — Enenche Dominion [enenchedominion2008]
+**Role:** Search, Reporting and CLI Engineer
 
 **Responsibilities:**
-- Ticket assignment and status management.
-- Work queue  
-- reporting
-- JSON data persistence and related tests.
+- Search interface and combined filters
+- Reports and analytics
+- Note CLI menus (calling A's APIs)
+- Engineering Understanding Check
+- Tests for search, reports, CLI, and quiz scoring
 
 **Contributions:**
-- Implemented ticket assignment and workflow management.
-- Developed the priority-based work queue.
-- Implemented ticket reporting.
-- Contributed to data storage and project integration.
+- Added `campusflow/search.py` (casefold title search + AND filters)
+- Extended `campusflow/reports.py` (totals, counts by status/priority/category, unresolved/resolved, resolution %)
+- Added `campusflow/understanding_check.py` (6-question interactive check with scoring)
+- Added CLI note menus (add/view) in `main.py`
+- Added tests: test_search.py, test_reports.py, test_understanding.py
 
+---
 
-##  Technologies Used
+## Project Structure
 
-- Python 
-- JSON 
-- GitHub 
-- VS Code
-
-
-
-##  Project Structure
-
-
+```
 campusflow/
-│
 ├── campusflow/
 │   ├── __init__.py
 │   ├── tickets.py
+│   ├── validation.py
 │   ├── workflow.py
-│   ├── queue.py
+│   ├── notes.py
+│   ├── search.py
 │   ├── reports.py
-│   └── storage.py
-│
+│   ├── queue.py
+│   ├── storage.py
+│   └── understanding_check.py
 ├── tests/
 │   ├── test_tickets.py
+│   ├── test_validation.py
 │   ├── test_workflow.py
+│   ├── test_notes.py
+│   ├── test_search.py
 │   ├── test_queue.py
 │   ├── test_reports.py
-│   └── test_storage.py
-│
+│   ├── test_storage.py
+│   └── test_understanding.py
 ├── data/
 │   └── tickets.json
-│
 ├── docs/
+│   ├── baseline-check.md
 │   ├── design-decisions.md
 │   └── ai-learning-log.md
-│
 ├── main.py
 ├── README.md
 └── .gitignore
-
-
+```
 
 ## Running CampusFlow
 
-From the project root directory, run:
-
+```bash
 python3 main.py
+```
 
-
-
-## icket Priority Rules
-
-CampusFlow automatically calculates priority using urgency and the number of affected users.
+## Ticket Priority Rules
 
 | Priority | Condition |
 |----------|-----------|
@@ -121,7 +114,7 @@ CampusFlow automatically calculates priority using urgency and the number of aff
 | Medium | Medium urgency OR at least 3 affected users |
 | Low | All remaining valid cases |
 
-**Important:** The rules are evaluated from top to bottom.
+Rules are evaluated top to bottom.
 
 ### Examples
 
@@ -134,108 +127,49 @@ CampusFlow automatically calculates priority using urgency and the number of aff
 | low | 4 | medium |
 | low | 1 | low |
 
+## Ticket Status Rules
 
+- `open → in_progress` — only if the ticket is assigned
+- `in_progress → resolved` — allowed
+- `resolved → open` — allowed (reopen)
+- All other transitions rejected
+
+## Follow-up Notes
+
+- Every ticket has a `notes` list, initially empty
+- Notes may be added only when status is `open` or `in_progress`
+- Each note has `note_id` (N001, N002, ...), `author`, and `message`
+- Author must be non-blank; message must be 5–300 characters after trimming
+- A rejected note does **not** consume a note ID
+- Notes are preserved through resolve and reopen
+
+## Open Work Queue
+
+The original Open Work Queue shows **only open tickets**, ordered by:
+1. Priority: critical > high > medium > low
+2. Then by numeric ticket ID (earlier first)
+
+`in_progress` and `resolved` tickets do not appear in this queue.
 
 ## Automated Testing
 
-CampusFlow uses Python's built-in `unittest` framework.
-
-### Run All Tests
-
-From the project root directory:
+Run all tests:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-### Run Individual Tests
-
-**Ticket creation and validation:**
+Run a single file:
 
 ```bash
-python3 -m unittest discover -s tests -p "test_tickets.py" -v
-```
-
-**JSON storage:**
-
-```bash
+python3 -m unittest discover -s tests -p "test_validation.py" -v
+python3 -m unittest discover -s tests -p "test_notes.py" -v
 python3 -m unittest discover -s tests -p "test_storage.py" -v
-```
-
-**Ticket workflow:**
-
-```bash
-python3 -m unittest discover -s tests -p "test_workflow.py" -v
-```
-
-**Work queue:**
-
-```bash
-python3 -m unittest discover -s tests -p "test_queue.py" -v
-```
-
-**Ticket reports:**
-
-```bash
+python3 -m unittest discover -s tests -p "test_search.py" -v
 python3 -m unittest discover -s tests -p "test_reports.py" -v
+python3 -m unittest discover -s tests -p "test_understanding.py" -v
 ```
 
-
-##  Known Limitations
-
-The following limitations should be considered:
-
-1. **Command-line interface:** CampusFlow currently uses a terminal interface rather than a graphical interface or website.
-
-2. **Local storage:** Tickets are stored in a local JSON file rather than a database.
-
-3. **Single-user design:** The application does not currently provide user authentication or role-based access control.
-
-4. **Integration pending:** Some features may not be available until both engineers' contributions are merged.
-
-5. **Testing:** The complete integrated application has not yet been verified to pass all automated tests.
-
-### Future Improvements
-
-Potential improvements include:
-
-- Building a web-based interface.
-- Adding user authentication.
-- Using SQLite or PostgreSQL for data storage.
-- Implementing ticket search and filtering.
-- Adding notifications for high-priority tickets.
-- Expanding automated integration testing.
-
-
-### Repository
-
-https://github.com/Cherry-tech14/campusflow
-
-### Collaboration Process
-
-1. Each engineer works on a separate feature branch.
-2. Changes are committed and pushed to GitHub.
-3. Pull requests are created for review.
-4. The other engineer reviews the implementation.
-5. Requested changes are addressed.
-6. Approved pull requests are merged into `main`.
-7. The integrated project is tested before submission.
-
-### Pull Requests
-Engineer A : https://github.com/Cherry-tech14/campusflow/pull/13
-Engineer B: https://github.com/Cherry-tech14/campusflow/pull/10
-All pull requests can also be viewed here:
-
-
-Engineer B: https://github.com/Cherry-tech14/campusflow/pull/10
-
-### All pull requests can also be viewed here:
-
-https://github.com/Cherry-tech14/campusflow/pulls
-
-
-
-### campus flow next
 ## Data Format
 
 Tickets are stored in `data/tickets.json` as a JSON list. Each ticket has the shape:
@@ -254,3 +188,46 @@ Tickets are stored in `data/tickets.json` as a JSON list. Each ticket has the sh
     {"note_id": "N001", "author": "Mentor A", "message": "Router rebooted"}
   ]
 }
+```
+
+**Validation on load:** the full collection is validated before replacing in-memory
+state. Malformed records, invalid values, and duplicate ticket/note IDs cause the
+load to be rejected with `ValueError`; existing memory is unchanged.
+
+**Migration:** legacy tickets that lack the `notes` field are automatically given
+`"notes": []` on load. All other validation still applies.
+
+## Documentation
+
+- `docs/baseline-check.md` — pre-change test results and identified gaps
+- `docs/ai-learning-log.md` — AI learning cycles (both engineers)
+- `docs/design-decisions.md` — design rationale
+
+## Known Limitations
+
+1. Command-line interface only (no GUI or web front-end)
+2. Local JSON file storage (no database)
+3. Single-user design (no authentication or roles)
+4. Search uses substring matching only (no fuzzy spelling)
+
+## Future Improvements
+
+- Web-based interface
+- User authentication and roles
+- SQLite or PostgreSQL storage
+- Fuzzy search and saved filters
+- Notifications for critical tickets
+
+## Repository
+
+https://github.com/enenchedominion2008/campus-flow-next
+
+## Collaboration Process
+
+1. Each engineer works on a separate feature branch
+2. Changes are committed and pushed to GitHub
+3. Pull requests are opened for review
+4. The other engineer reviews the implementation
+5. Requested changes are addressed
+6. Approved PRs are merged into `main`
+7. Integrated project is tested before submission
