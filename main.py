@@ -204,8 +204,9 @@ def main():
                     "Resolution percentage:",
                     f'{report["resolution_percentage"]:.1f}%'
                 )
-                
+
                 print("===================================")
+
             except (KeyError, TypeError) as error:
                 print("Error generating report:", error)
 
@@ -264,21 +265,24 @@ def main():
             except (KeyError, AttributeError) as error:
                 print("Error searching tickets:", error)
 
-        # OPTION 9: EXIT
-                # OPTION 9: ENGINEERING UNDERSTANDING CHECK
+        # OPTION 9: ENGINEERING UNDERSTANDING CHECK
         elif choice == "9":
             run_quiz()
 
+        # OPTION 10: ADD FOLLOW-UP NOTE
         elif choice == "10":
-           print("\nAdd Follow-up Note")
+            print("\nAdd Follow-up Note")
 
             ticket_id = input("Enter ticket ID: ").strip()
             author = input("Enter author name: ").strip()
-            message = input("Enter note message (5-300 chars): ").strip()
+            message = input(
+                "Enter note message (5-300 chars): "
+            ).strip()
 
             try:
                 note = add_note(ticket_id, author, message, tickets)
                 save_tickets(tickets)
+
                 print("Note added successfully!")
                 print("Note ID:", note["note_id"])
                 print("Author:", note["author"])
@@ -290,37 +294,45 @@ def main():
             except OSError as error:
                 print("Error saving note:", error)
 
+        # OPTION 11: VIEW TICKET NOTES
         elif choice == "11":
             print("\nTicket Notes")
 
             ticket_id = input("Enter ticket ID: ").strip()
 
             target = None
-            for t in tickets:
-                if t["id"] == ticket_id:
-                    target = t
+
+            for ticket in tickets:
+                if ticket["id"] == ticket_id:
+                    target = ticket
                     break
 
             if target is None:
                 print(f"Ticket {ticket_id} not found.")
-            elif not target["notes"]:
+
+            elif not target.get("notes", []):
                 print(f"Ticket {ticket_id} has no notes yet.")
+
             else:
-                print(f"\nNotes for {ticket_id} — {target['title']}")
+                print(
+                    f"\nNotes for {ticket_id} — {target['title']}"
+                )
+
                 for note in target["notes"]:
                     print("\n-------------------------")
                     print("Note ID:", note["note_id"])
                     print("Author:", note["author"])
                     print("Message:", note["message"])
 
-        # OPTION 10: EXIT
+        # OPTION 12: EXIT
         elif choice == "12":
             print("Thank you for using CampusFlow!")
             break
 
         # INVALID MENU CHOICE
         else:
-            print("Invalid choice. Please enter a number from 1 to 10.")
+            print("Invalid choice. Please enter a number from 1 to 12.")
+
 
 def get_valid_filter(prompt, valid_options):
     while True:
@@ -339,6 +351,7 @@ def get_valid_filter(prompt, valid_options):
             "Invalid option. Please choose from: "
             + ", ".join(valid_options)
         )
+
 
 if __name__ == "__main__":
     main()

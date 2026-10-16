@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Runtime ticket data is local state and must not be committed.
+data/tickets.json
