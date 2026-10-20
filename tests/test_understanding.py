@@ -128,6 +128,67 @@ class TestUnderstandingCheck(unittest.TestCase):
             displayed_output,
         )
 
+class TestNotesBugHunter(unittest.TestCase):
+    """Bug-hunter test — Engineer B against Engineer A's module (campusflow/notes.py)."""
+
+    def test_bug_hunter_add_note_with_none_author_raises_value_error(self):
+        """Bug-hunter (Engineer B) — add_note with author=None must raise
+        ValueError, not crash with AttributeError on None.strip().
+
+        Initial state: open ticket with empty notes list.
+        Input: add_note("T001", None, "valid message here", [ticket]).
+        Expected: ValueError raised; ticket["notes"] still empty.
+        Actual: ValueError raised; notes unchanged — pass.
+        """
+        from campusflow.notes import add_note
+
+        ticket = {
+            "id": "T001",
+            "title": "wifi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 12,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+            "notes": [],
+        }
+
+        with self.assertRaises(ValueError):
+            add_note("T001", None, "valid message here", [ticket])
+
+        # invariant: rejected note does not mutate the ticket
+        self.assertEqual(ticket["notes"], [])
+
+    def test_bug_hunter_next_note_id_skips_malformed_ids(self):
+        """Bug-hunter (Engineer B) — next_note_id must not crash on a
+        malformed note_id (e.g. "garbage") and must still return N002
+        when N001 is present.
+
+        Initial state: ticket has notes N001 and one malformed entry.
+        Input: next_note_id(ticket).
+        Expected: "N002".
+        Actual: "N002" — pass.
+        """
+        from campusflow.notes import next_note_id
+
+        ticket = {
+            "id": "T001",
+            "title": "wifi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 12,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+            "notes": [
+                {"note_id": "N001", "author": "A", "message": "first note here"},
+                {"note_id": "garbage", "author": "B", "message": "bad note id"},
+            ],
+        }
+
+        self.assertEqual(next_note_id(ticket), "N002")
+=======
     # ---------------------------------------------------------------
     # Bug-hunter tests (§06)
     # ---------------------------------------------------------------
