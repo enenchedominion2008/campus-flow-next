@@ -188,6 +188,36 @@ class TestNotesBugHunter(unittest.TestCase):
         }
 
         self.assertEqual(next_note_id(ticket), "N002")
+=======
+    # ---------------------------------------------------------------
+    # Bug-hunter tests (§06)
+    # ---------------------------------------------------------------
+
+    def test_bug_hunter_invalid_choice_never_scores(self):
+        """Bug-hunter (Engineer A) — invalid answers must NEVER score as correct.
+
+        Initial state: question bank loaded; score_answers available.
+        Input: six "Z" answers (not A/B/C/D).
+        Expected: score = 0.
+        """
+        answers = ["Z", "Z", "Z", "Z", "Z", "Z"]
+        self.assertEqual(score_answers(answers), 0)
+
+        # sanity: full correct answers still score 6
+        correct = [q["answer"] for q in QUESTIONS]
+        self.assertEqual(score_answers(correct), 6)
+
+    def test_bug_hunter_score_does_not_exceed_question_count(self):
+        """Bug-hunter (Engineer A) — score must never exceed the number of questions.
+
+        Initial state: question bank loaded.
+        Input: correct answer list plus 3 extra entries ("B","C","B").
+        Expected: score <= len(QUESTIONS).
+        """
+        correct = [q["answer"] for q in QUESTIONS]
+        extra = correct + ["B", "C", "B"]
+        self.assertLessEqual(score_answers(extra), len(QUESTIONS))
+
 
 if __name__ == "__main__":
     unittest.main()
