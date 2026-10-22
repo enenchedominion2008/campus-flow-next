@@ -231,3 +231,4 @@ https://github.com/enenchedominion2008/campus-flow-next
 5. Requested changes are addressed
 6. Approved PRs are merged into `main`
 7. Integrated project is tested before submission
+8. 
