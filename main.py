@@ -32,7 +32,7 @@ def main():
         print("10. Add Follow-up Note")
         print("11. View Ticket Notes")
         print("12. Exit")
-        print("=========================================")
+        print("========================================")
 
         choice = input("Enter your choice: ").strip()
 
