@@ -320,7 +320,7 @@ def main():
 
         # INVALID MENU CHOICE
         else:
-            print("Invalid choice. Please enter a number from 1 to 10.")
+            print("Invalid choice. Please enter a number from 1 to 12.")
 
 def get_valid_filter(prompt, valid_options):
     while True:
